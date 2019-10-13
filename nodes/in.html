@@ -1,0 +1,42 @@
+<script type="text/javascript">
+    RED.nodes.registerType('miio-humidifier-input', {
+        category: 'miio-humidifier',
+        defaults: {
+            name: {
+                value: ""
+            },
+            ip: {
+                value: null,
+                required: true
+            },
+            token: {
+                value: null,
+                required: true
+            }
+        },
+        inputs: 0,
+        outputs: 1,
+        outputLabels: ["homekit"],
+        paletteLabel: 'in',
+        label: function () {
+            return this.name || "Air Humidifier In";
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="miio-humidifier-input">
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-bookmark"></i> Name</label>
+        <input type="text" id="node-input-name">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-ip"><i class="icon-bookmark"></i> IP Address</label>
+        <input type="text" id="node-input-ip">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-token"><i class="icon-bookmark"></i> Token</label>
+        <input type="text" id="node-input-token">
+    </div>
+</script>
