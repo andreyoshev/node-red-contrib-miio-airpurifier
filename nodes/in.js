@@ -66,7 +66,7 @@ module.exports = function (RED) {
             return new Promise(function (resolve, reject) {
                 if (force) {
                     if (node.device !== null) {
-                        node.device.call("get_prop", ["mode", "filter1_life", "aqi", "child_lock", "power", "favorite_level", "temp_dec", "humidity"], [])
+                        node.device.loadProperties(["mode", "filter1_life", "aqi", "child_lock", "power", "favorite_level", "temp_dec", "humidity"])
                             .then(device => {
                                 node.send([{
                                         'air': node.formatAirQuality(device)
@@ -95,37 +95,37 @@ module.exports = function (RED) {
         formatHomeKit(result) {
             var msg = {};
 
-            if (result[4] === "on") {
+            if (result.power === "on") {
                 msg.Active = 1;
                 msg.CurrentAirPurifierState = 2;
-            } else if (result[4] === "off") {
+            } else if (result.power === "off") {
                 msg.Active = 0;
                 msg.CurrentAirPurifierState = 0;
             }
 
-            if (result[0] === "favorite") {
+            if (result.mode === "favorite") {
                 msg.TargetAirPurifierState = 1;
             } else {
                 msg.TargetAirPurifierState = 0;
             }
 
-            if (result[3] === "on") {
+            if (result.child_lock === "on") {
                 msg.LockPhysicalControls = 1;
-            } else if (result[3] === "off") {
+            } else if (result.child_lock === "off") {
                 msg.LockPhysicalControls = 0;
             }
 
-            if (result[1] < 5) {
+            if (result.filter1_life < 5) {
                 msg.FilterChangeIndication = 1;
             } else {
                 msg.FilterChangeIndication = 0;
             }
 
-            msg.FilterLifeLevel = result[1];
-            msg.PM2_5Density = result[2];
-            msg.RotationSpeed = result[5] * 10;
-            msg.CurrentTemperature = result[6];
-            msg.CurrentRelativeHumidity = result[7];
+            msg.FilterLifeLevel = result.filter1_life;
+            msg.PM2_5Density = result.aqi;
+            msg.RotationSpeed = result.favorite_level * 10;
+            msg.CurrentTemperature = result.temp_dec;
+            msg.CurrentRelativeHumidity = result.humidity;
 
             return msg;
         }
@@ -133,37 +133,21 @@ module.exports = function (RED) {
         formatAirQuality(result) {
             var msg = {};
 
-            if (result[2] <= 50) {
+            if (result.aqi <= 50) {
                 msg.AirQuality = 1;
-            } else if (result[2] > 50 && result[2] <= 100) {
+            } else if (result.aqi > 50 && result.aqi <= 100) {
                 msg.AirQuality = 2;
-            } else if (result[2] > 100 && result[2] <= 200) {
+            } else if (result.aqi > 100 && result.aqi <= 200) {
                 msg.AirQuality = 3;
-            } else if (result[2] > 200 && result[2] <= 300) {
+            } else if (result.aqi > 200 && result.aqi <= 300) {
                 msg.AirQuality = 4;
-            } else if (result[2] > 300) {
+            } else if (result.aqi > 300) {
                 msg.AirQuality = 5;
             } else {
                 msg.AirQuality = 0;
             }
 
             return msg;
-        }
-
-        getModeByRotationSpeed(value) {
-            var mode = 'low';
-
-            if (value > 0 && value <= 25) {
-                mode = 'low';
-            } else if (value > 25 && value <= 50) {
-                mode = 'medium';
-            } else if (value > 50 && value <= 70) {
-                mode = 'high';
-            } else if (value > 75 && value <= 100) {
-                mode = 'strong';
-            }
-
-            return mode;
         }
     }
 
