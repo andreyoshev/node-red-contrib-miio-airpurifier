@@ -33,8 +33,32 @@ module.exports = function (RED) {
 
                 if (isSet(payload.Active)) {
                     var value = payload.Active;
-                    node.device.call("set_power", [Boolean(value) ? "on" : "off"])
+                    node.device.call("set_power", [Boolean(value) ? "on" : "off"]);
                 }
+
+                if (isSet(payload.LockPhysicalControls)) {
+                    var value = payload.LockPhysicalControls;
+                    node.device.call("set_child_lock", [Boolean(value) ? "on" : "off"]);
+                }
+
+                if (isSet(payload.TargetAirPurifierState)) {
+                    var value = payload.TargetAirPurifierState;
+                    that.device.call("set_mode", [value == 1 ? "auto" : "favorite"]);
+                }
+
+                if (isSet(payload.RotationSpeed)) {
+                    var value = payload.RotationSpeed;
+                    if (value == 0) {} else {
+                        that.device.call("set_level_favorite", [parseInt(value / 10) < 10 ? parseInt(value / 10) + 1 : 10]).then(result => {
+                            if (result[0] === "ok") {} else {
+                                console.log(new Error(result[0]));
+                            }
+                        }).catch(function (err) {
+                            console.log(err);
+                        })
+                    }
+                }
+
             });
         }
 
