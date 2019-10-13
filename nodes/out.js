@@ -43,19 +43,16 @@ module.exports = function (RED) {
 
                 if (isSet(payload.Active)) {
                     var value = payload.Active;
-                    console.log(Boolean(value));
                     node.device.call("set_power", [Boolean(value) ? "on" : "off"])
                 }
 
                 if (isSet(payload.SwingMode)) {
                     var value = payload.SwingMode;
-                    console.log(Boolean(value));
                     node.device.call("set_dry", [Boolean(value) ? "on" : "off"])
                 }
 
                 if (isSet(payload.LockPhysicalControls)) {
                     var value = payload.LockPhysicalControls;
-                    console.log(Boolean(value));
                     node.device.call("set_child_lock", [Boolean(value) ? "on" : "off"])
                 }
 

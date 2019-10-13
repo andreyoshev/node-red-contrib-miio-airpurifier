@@ -8,7 +8,6 @@ module.exports = function (RED) {
             var node = this;
             node.config = n;
 
-            console.log(n);
             node.setMaxListeners(255);
             node.on('close', () => this.onClose());
 
