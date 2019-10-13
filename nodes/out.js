@@ -5,7 +5,7 @@ function isSet(value) {
 }
 
 module.exports = function (RED) {
-    class MiioHumidifierOutput {
+    class MiioAirpurifierOutput {
         constructor(config) {
             RED.nodes.createNode(this, config);
 
@@ -31,66 +31,9 @@ module.exports = function (RED) {
 
                 console.log(payload);
 
-                if (isSet(payload.RelativeHumidityHumidifierThreshold)) {
-                    var value = payload.RelativeHumidityHumidifierThreshold;
-                    if (value > 0 && value <= 40) {
-                        value = 40;
-                    } else if (value > 80 && value <= 100) {
-                        value = 80;
-                    }
-                    node.device.call("set_limit_hum", [value]);
-                }
-
                 if (isSet(payload.Active)) {
                     var value = payload.Active;
                     node.device.call("set_power", [Boolean(value) ? "on" : "off"])
-                }
-
-                if (isSet(payload.SwingMode)) {
-                    var value = payload.SwingMode;
-                    node.device.call("set_dry", [Boolean(value) ? "on" : "off"])
-                }
-
-                if (isSet(payload.LockPhysicalControls)) {
-                    var value = payload.LockPhysicalControls;
-                    node.device.call("set_child_lock", [Boolean(value) ? "on" : "off"])
-                }
-
-                if (isSet(payload.RotationSpeed)) {
-                    var value = payload.RotationSpeed;
-                    if (value == 25) {
-                        node.device.call("set_mode", ["auto"]).then(result => {
-                            if (result[0] === "ok") {} else {
-                                console.log(new Error(result[0]));
-                            }
-                        }).catch(function (err) {
-                            console.log(err);
-                        });
-                    } else if (value == 50) {
-                        node.device.call("set_mode", ["silent"]).then(result => {
-                            if (result[0] === "ok") {} else {
-                                console.log(new Error(result[0]));
-                            }
-                        }).catch(function (err) {
-                            console.log(err);
-                        });
-                    } else if (value == 75) {
-                        node.device.call("set_mode", ["medium"]).then(result => {
-                            if (result[0] === "ok") {} else {
-                                console.log(new Error(result[0]));
-                            }
-                        }).catch(function (err) {
-                            console.log(err);
-                        });
-                    } else if (value == 100) {
-                        node.device.call("set_mode", ["high"]).then(result => {
-                            if (result[0] === "ok") {} else {
-                                console.log(new Error(result[0]));
-                            }
-                        }).catch(function (err) {
-                            console.log(err);
-                        });
-                    }
                 }
             });
         }
@@ -116,21 +59,21 @@ module.exports = function (RED) {
                     node.device.updateMaxPollFailures(0);
 
                     node.device.on('thing:initialized', () => {
-                        node.log('Miio Humidifier: Initialized');
+                        node.log('Miio Airpurifier: Initialized');
                     });
 
                     node.device.on('thing:destroyed', () => {
-                        node.log('Miio Humidifier: Destroyed');
+                        node.log('Miio Airpurifier: Destroyed');
                     });
 
                     resolve(device);
                 }).catch(err => {
-                    node.warn('Miio Humidifier Error: ' + err.message);
+                    node.warn('Miio Airpurifier Error: ' + err.message);
                     reject(err);
                 });
             });
         }
     }
 
-    RED.nodes.registerType('miio-humidifier-output', MiioHumidifierOutput);
+    RED.nodes.registerType('miio-airpurifier-output', MiioAirpurifierOutput);
 };

@@ -1,5 +1,4 @@
-Node for Smartmi humidifier.
-zhimi.humidifier.ca1.
+Node for Xiaomi Airpurifier.
 
 ```json
 {

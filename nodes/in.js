@@ -1,7 +1,7 @@
 const miio = require('miio');
 
 module.exports = function (RED) {
-    class MiioHumidifierInput {
+    class MiioAirpurifierInput {
         constructor(n) {
             RED.nodes.createNode(this, n);
 
@@ -45,16 +45,16 @@ module.exports = function (RED) {
                     node.device.updateMaxPollFailures(0);
 
                     node.device.on('thing:initialized', () => {
-                        node.log('Miio Humidifier: Initialized');
+                        node.log('Miio Airpurifier: Initialized');
                     });
 
                     node.device.on('thing:destroyed', () => {
-                        node.log('Miio Humidifier: Destroyed');
+                        node.log('Miio Airpurifier: Destroyed');
                     });
 
                     resolve(device);
                 }).catch(err => {
-                    node.warn('Miio Humidifier Error: ' + err.message);
+                    node.warn('Miio Airpurifier Error: ' + err.message);
                     reject(err);
                 });
             });
@@ -66,7 +66,7 @@ module.exports = function (RED) {
             return new Promise(function (resolve, reject) {
                 if (force) {
                     if (node.device !== null) {
-                        node.device.call("get_prop", ["power", "humidity", "child_lock", "dry", "depth", "limit_hum", "mode"], [])
+                        node.device.call("get_prop", ["mode", "filter1_life", "aqi", "child_lock", "power", "favorite_level"], [])
                             .then(device => {
                                 node.send({
                                     'payload': node.formatHomeKit(device)
@@ -91,44 +91,51 @@ module.exports = function (RED) {
         formatHomeKit(result) {
             var msg = {};
 
-            if (result[0] === "on") {
+            if (result[4] === "on") {
                 msg.Active = 1;
-                msg.CurrentHumidifierDehumidifierState = 2;
-            } else if (result[0] === "off") {
+                msg.CurrentAirPurifierState = 2;
+            } else if (result[4] === "off") {
                 msg.Active = 0;
-                msg.CurrentHumidifierDehumidifierState = 0;
+                msg.CurrentAirPurifierState = 0;
             }
-            if (result[2] === "on") {
+
+            if (result[0] === "favorite") {
+                msg.TargetAirPurifierState = 1;
+            } else {
+                msg.TargetAirPurifierState = 0;
+            }
+
+            if (result[3] === "on") {
                 msg.LockPhysicalControls = 1;
-            } else if (result[2] === "off") {
+            } else if (result[3] === "off") {
                 msg.LockPhysicalControls = 0;
             }
-            if (result[3] === "on") {
-                msg.SwingMode = 1;
-            } else if (result[3] === "off") {
-                msg.SwingMode = 0;
-            }
 
-            if (result[6] === "auto") {
-                msg.RotationSpeed = 25;
-            } else if (result[6] === "silent") {
-                msg.RotationSpeed = 50;
-            } else if (result[6] === "medium") {
-                msg.RotationSpeed = 75;
-            } else if (result[6] === "high") {
-                msg.RotationSpeed = 100;
+            if (result[1] < 5) {
+                msg.FilterChangeIndication = 1;
             } else {
-                msg.RotationSpeed = 0;
+                msg.FilterChangeIndication = 0;
             }
 
-            msg.WaterLevel = Math.ceil(result[4] / 1.2);
-            msg.CurrentRelativeHumidity = result[1];
-            msg.TargetHumidifierDehumidifierState = 1;
-            msg.RelativeHumidityHumidifierThreshold = result[5];
+            if (result[2] <= 50) {
+                msg.AirQuality = 1;
+            } else if (result[2] > 50 && result[2] <= 100) {
+                msg.AirQuality = 2;
+            } else if (result[2] > 100 && result[2] <= 200) {
+                msg.AirQuality = 3;
+            } else if (result[2] > 200 && result[2] <= 300) {
+                msg.AirQuality = 4;
+            } else if (result[2] > 300) {
+                msg.AirQuality = 5;
+            } else {
+                msg.AirQuality = 0;
+            }
+
+            msg.RotationSpeed = result[5] * 10;
 
             return msg;
         }
     }
 
-    RED.nodes.registerType('miio-humidifier-input', MiioHumidifierInput, {});
+    RED.nodes.registerType('miio-airpurifier-input', MiioAirpurifierInput, {});
 };
