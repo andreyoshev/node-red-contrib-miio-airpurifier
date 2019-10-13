@@ -66,11 +66,15 @@ module.exports = function (RED) {
             return new Promise(function (resolve, reject) {
                 if (force) {
                     if (node.device !== null) {
-                        node.device.call("get_prop", ["mode", "filter1_life", "aqi", "child_lock", "power", "favorite_level"], [])
+                        node.device.call("get_prop", ["mode", "filter1_life", "aqi", "child_lock", "power", "favorite_level", "temp_dec", "humidity"], [])
                             .then(device => {
-                                node.send({
-                                    'payload': node.formatHomeKit(device)
-                                });
+                                node.send([{
+                                        'air': node.formatAirQuality(device)
+                                    },
+                                    {
+                                        'payload': node.formatHomeKit(device)
+                                    }
+                                ]);
                             }).catch(err => {
                                 console.log('Encountered an error while controlling device');
                                 console.log('Error(2) was:');
@@ -117,6 +121,18 @@ module.exports = function (RED) {
                 msg.FilterChangeIndication = 0;
             }
 
+            msg.FilterLifeLevel = result[1];
+            msg.PM2_5Density = result[2];
+            msg.RotationSpeed = result[5] * 10;
+            msg.CurrentTemperature = result[6];
+            msg.CurrentRelativeHumidity = result[7];
+
+            return msg;
+        }
+
+        formatAirQuality(result) {
+            var msg = {};
+
             if (result[2] <= 50) {
                 msg.AirQuality = 1;
             } else if (result[2] > 50 && result[2] <= 100) {
@@ -131,9 +147,23 @@ module.exports = function (RED) {
                 msg.AirQuality = 0;
             }
 
-            msg.RotationSpeed = result[5] * 10;
-
             return msg;
+        }
+
+        getModeByRotationSpeed(value) {
+            var mode = 'low';
+
+            if (value > 0 && value <= 25) {
+                mode = 'low';
+            } else if (value > 25 && value <= 50) {
+                mode = 'medium';
+            } else if (value > 50 && value <= 70) {
+                mode = 'high';
+            } else if (value > 75 && value <= 100) {
+                mode = 'strong';
+            }
+
+            return mode;
         }
     }
 
