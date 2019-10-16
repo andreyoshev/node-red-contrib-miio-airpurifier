@@ -56,7 +56,7 @@ module.exports = function (RED) {
                 if (isSet(payload.RotationSpeed)) {
                     var value = payload.RotationSpeed;
                     if (value == 0) {} else {
-                        node.device.call("set_level_favorite", parseInt(value * 0.17)).then(result => {
+                        node.device.call("set_level_favorite", parseInt(value / (100 / 52))).then(result => {
                             if (result[0] === "ok") {} else {
                                 console.log(new Error(result[0]));
                             }
