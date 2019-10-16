@@ -69,7 +69,7 @@ module.exports = function (RED) {
                         node.device.loadProperties(["mode", "filter1_life", "aqi", "child_lock", "power", "favorite_level", "temp_dec", "humidity"])
                             .then(device => {
                                 node.send([{
-                                        'payload': node.formatAirQuality(device)
+                                        'payload_raw': device
                                     },
                                     {
                                         'payload': node.formatHomeKit(device)
@@ -129,15 +129,9 @@ module.exports = function (RED) {
             }
 
             msg.FilterLifeLevel = result.filter1_life;
-            msg.RotationSpeed = parseInt(result.favorite_level * 100 / 52);
+            msg.RotationSpeed = parseInt(result.favorite_level * 10);
             msg.CurrentTemperature = result.temp_dec / 10;
             msg.CurrentRelativeHumidity = result.humidity;
-
-            return msg;
-        }
-
-        formatAirQuality(result) {
-            var msg = {};
 
             msg.PM2_5Density = result.aqi;
 

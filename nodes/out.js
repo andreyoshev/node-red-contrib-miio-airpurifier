@@ -55,15 +55,37 @@ module.exports = function (RED) {
 
                 if (isSet(payload.RotationSpeed)) {
                     var value = payload.RotationSpeed;
-                    if (value == 0) {} else {
-                        node.device.call("set_level_favorite", parseInt(value / (100 / 52))).then(result => {
-                            if (result[0] === "ok") {} else {
-                                console.log(new Error(result[0]));
+
+                    if (node.TargetAirPurifierState == "auto") {
+                        if (value == 0) {} else {
+                            node.device.call("set_level_favorite", [parseInt(value / 10)]).then(result => {
+                                if (result[0] === "ok") {} else {
+                                    console.log(new Error(result[0]));
+                                }
+                            }).catch(function (err) {
+                                console.log(err);
+                            });
+                        }
+                    } else {
+                        node.device.loadProperties(["favorite_level"]).then(result => {
+
+                            if (node.RotationSpeed <= result.favorite_level * 10 && node.RotationSpeed.value > (result.favorite_level - 1) * 10) {
+
+                            } else {
+                                node.device.call("set_level_favorite", [parseInt(value / 10)]).then(result => {
+                                    if (result[0] === "ok") {} else {
+                                        console.log(new Error(result[0]));
+                                    }
+                                }).catch(function (err) {
+                                    console.log(err);
+                                });
                             }
                         }).catch(function (err) {
                             console.log(err);
-                        })
+                        });
                     }
+
+                    node.RotationSpeed = value;
                 }
             });
         }
