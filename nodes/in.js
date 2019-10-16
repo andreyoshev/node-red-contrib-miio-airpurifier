@@ -130,7 +130,7 @@ module.exports = function (RED) {
 
             msg.FilterLifeLevel = result.filter1_life;
             msg.RotationSpeed = parseInt(result.favorite_level * 100 / 52);
-            msg.CurrentTemperature = result.temp_dec;
+            msg.CurrentTemperature = result.temp_dec / 10;
             msg.CurrentRelativeHumidity = result.humidity;
 
             return msg;
