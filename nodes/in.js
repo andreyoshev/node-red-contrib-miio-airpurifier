@@ -104,9 +104,16 @@ module.exports = function (RED) {
             }
 
             if (result.mode === "favorite") {
+                msg.TargetAirPurifierState = 0;
+            } else {
+                msg.TargetAirPurifierState = 1;
+            }
+
+            if (result.mode == "silent") {
+                msg.SwingMode = 1;
                 msg.TargetAirPurifierState = 1;
             } else {
-                msg.TargetAirPurifierState = 0;
+                msg.SwingMode = 0;
             }
 
             if (result.child_lock === "on") {
@@ -122,7 +129,7 @@ module.exports = function (RED) {
             }
 
             msg.FilterLifeLevel = result.filter1_life;
-            msg.RotationSpeed = result.favorite_level * 10;
+            msg.RotationSpeed = parseInt(value / 0.17);
             msg.CurrentTemperature = result.temp_dec;
             msg.CurrentRelativeHumidity = result.humidity;
 

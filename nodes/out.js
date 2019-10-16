@@ -29,8 +29,6 @@ module.exports = function (RED) {
                     return;
                 }
 
-                console.log(payload);
-
                 if (isSet(payload.Active)) {
                     var value = payload.Active;
                     node.device.call("set_power", [Boolean(value) ? "on" : "off"]);
@@ -43,13 +41,22 @@ module.exports = function (RED) {
 
                 if (isSet(payload.TargetAirPurifierState)) {
                     var value = payload.TargetAirPurifierState;
-                    node.device.call("set_mode", [value == 1 ? "auto" : "favorite"]);
+                    node.TargetAirPurifierState = value;
+
+                    node.device.call("set_mode", [value == 1 ? (node.SwingMode == 1 ? "silent" : "auto") : "favorite"]);
+                }
+
+                if (isSet(payload.SwingMode)) {
+                    var value = payload.SwingMode;
+                    node.SwingMode = value;
+
+                    node.device.call("set_mode", [value == 1 ? "silent" : node.TargetAirPurifierState == 1 ? "auto" : "favorite"]);
                 }
 
                 if (isSet(payload.RotationSpeed)) {
                     var value = payload.RotationSpeed;
                     if (value == 0) {} else {
-                        node.device.call("set_level_favorite", [parseInt(value / 10) < 10 ? parseInt(value / 10) + 1 : 10]).then(result => {
+                        node.device.call("set_level_favorite", parseInt(value * 0.17)).then(result => {
                             if (result[0] === "ok") {} else {
                                 console.log(new Error(result[0]));
                             }
@@ -58,7 +65,6 @@ module.exports = function (RED) {
                         })
                     }
                 }
-
             });
         }
 
