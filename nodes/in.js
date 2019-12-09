@@ -1,5 +1,9 @@
 const miio = require('miio');
 
+function isSet(value) {
+    return typeof value !== 'undefined' && value != null;
+}
+
 module.exports = function (RED) {
     class MiioAirpurifierInput {
         constructor(n) {
@@ -65,7 +69,13 @@ module.exports = function (RED) {
 
             return new Promise(function (resolve, reject) {
                 if (force) {
-                    if (node.device !== null) {
+                    if (isSet(node.device)) {
+                        node.status({
+                            fill: "green",
+                            shape: "dot",
+                            text: "Connected."
+                        });
+
                         node.device.loadProperties(["mode", "filter1_life", "aqi", "child_lock", "power", "favorite_level", "temp_dec", "humidity"])
                             .then(device => {
                                 node.send([{
@@ -83,6 +93,12 @@ module.exports = function (RED) {
                                 reject(err);
                             });
                     } else {
+                        node.status({
+                            fill: "red",
+                            shape: "dot",
+                            text: "Disconnected."
+                        });
+
                         node.connect();
                         reject('No device');
                     }
